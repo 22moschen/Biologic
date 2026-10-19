@@ -1,7 +1,73 @@
-import {notFound} from "next/navigation";
-import {requireActor} from "@/server/auth";
-import {db} from "@/server/db";
-import {birthDisplay,displayDate,statusLabel,examContentSchema} from "@/lib/domain";
-import {Brand} from "@/components/brand";
-import {PrintProtocol} from "@/components/print-protocol";
-export default async function Protocol({params}:{params:Promise<{id:string}>}){const actor=await requireActor();const {id}=await params;const a=await db.attendance.findFirst({where:{id,laboratoryId:actor.laboratoryId},include:{patient:true,laboratory:true,exams:true}});if(!a)notFound();return <article className="print-area mx-auto max-w-3xl rounded-2xl border border-border bg-white p-8"><Brand/><p className="mt-2 text-xs muted">Informação, cuidado e qualidade laboratorial.</p><div className="my-7 border-t border-border pt-7"><span className="eyebrow">{a.laboratory.name}</span><h1 className="mt-3 text-3xl">Protocolo de atendimento</h1></div><dl className="grid gap-4 sm:grid-cols-2"><div><dt className="text-xs muted">Paciente</dt><dd className="font-semibold">{a.patient.name}</dd></div><div><dt className="text-xs muted">Nascimento</dt><dd>{birthDisplay(a.patient.birthDate)}</dd></div><div><dt className="text-xs muted">Data e hora · Brasília</dt><dd>{displayDate(a.createdAt)}</dd></div><div><dt className="text-xs muted">Status do registro</dt><dd>{statusLabel[a.status]}</dd></div></dl><p className="mt-5 break-all text-xs muted">Identificador público: {a.publicId}<br/>Este identificador não é uma credencial de acesso.</p><h2 className="mt-7 mb-4 text-xl">Exames selecionados</h2><ul className="space-y-2">{a.exams.map(e=><li key={e.id} className="border-b border-border pb-2">{examContentSchema.parse(e.snapshot).name}</li>)}</ul><PrintProtocol publicId={a.publicId}/><p className="mt-8 text-xs muted">Conferência concluída significa conclusão do registro no sistema, não autorização clínica automática. Projeto acadêmico. Conteúdo demonstrativo pendente de revisão.</p></article>;}
+import { notFound } from "next/navigation";
+import { requireActor } from "@/server/auth";
+import { db } from "@/server/db";
+import {
+  birthDisplay,
+  displayDate,
+  statusLabel,
+  examContentSchema,
+} from "@/lib/domain";
+import { Brand } from "@/components/brand";
+import { PrintProtocol } from "@/components/print-protocol";
+export default async function Protocol({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const actor = await requireActor();
+  const { id } = await params;
+  const a = await db.attendance.findFirst({
+    where: { id, laboratoryId: actor.laboratoryId },
+    include: { patient: true, laboratory: true, exams: true },
+  });
+  if (!a) notFound();
+  return (
+    <article className="print-area mx-auto max-w-3xl rounded-2xl border border-border bg-white p-8">
+      <Brand />
+      <p className="mt-2 text-xs muted">
+        Informação, cuidado e qualidade laboratorial.
+      </p>
+      <div className="my-7 border-t border-border pt-7">
+        <span className="eyebrow">{a.laboratory.name}</span>
+        <h1 className="mt-3 text-3xl">Protocolo de atendimento</h1>
+      </div>
+      <dl className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <dt className="text-xs muted">Paciente</dt>
+          <dd className="font-semibold">{a.patient.name}</dd>
+        </div>
+        <div>
+          <dt className="text-xs muted">Nascimento</dt>
+          <dd>{birthDisplay(a.patient.birthDate)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs muted">Data e hora · Brasília</dt>
+          <dd>{displayDate(a.createdAt)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs muted">Status do registro</dt>
+          <dd>{statusLabel[a.status]}</dd>
+        </div>
+      </dl>
+      <p className="mt-5 break-all text-xs muted">
+        Identificador público: {a.publicId}
+        <br />
+        Este identificador não é uma credencial de acesso.
+      </p>
+      <h2 className="mt-7 mb-4 text-xl">Exames selecionados</h2>
+      <ul className="space-y-2">
+        {a.exams.map((e) => (
+          <li key={e.id} className="border-b border-border pb-2">
+            {examContentSchema.parse(e.snapshot).name}
+          </li>
+        ))}
+      </ul>
+      <PrintProtocol publicId={a.publicId} />
+      <p className="mt-8 text-xs muted">
+        Conferência concluída significa conclusão do registro no sistema, não
+        autorização clínica automática. Projeto acadêmico. Conteúdo
+        demonstrativo pendente de revisão.
+      </p>
+    </article>
+  );
+}

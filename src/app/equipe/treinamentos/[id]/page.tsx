@@ -1,9 +1,75 @@
-import {notFound} from "next/navigation";
-import {z} from "zod";
-import {requireActor} from "@/server/auth";
-import {db} from "@/server/db";
-import {transaction} from "@/server/services";
-import {trainingQuestionSchema,displayDate} from "@/lib/domain";
-import {TrainingQuiz} from "@/components/training";
-import {Card} from "@/components/ui/card";
-export default async function Training({params}:{params:Promise<{id:string}>}){const a=await requireActor();const {id}=await params;const m=await db.trainingModule.findFirst({where:{id,laboratoryId:a.laboratoryId,published:true},include:{versions:{orderBy:{version:"desc"},take:1}}});if(!m)notFound();const v=m.versions[0];await transaction(a,tx=>tx.trainingProgress.upsert({where:{userId_versionId:{userId:a.id,versionId:v.id}},create:{userId:a.id,versionId:v.id},update:{}}));const attempts=await db.trainingAttempt.findMany({where:{userId:a.id,version:{moduleId:id}},include:{version:{select:{version:true}}},orderBy:{createdAt:"desc"},take:10});const questions=z.array(trainingQuestionSchema).parse(v.questions).map(q=>({id:q.id,text:q.text,options:q.options}));return <><span className="eyebrow">Treinamento · Versão {v.version}</span><h1 className="mt-3 mb-6">{m.title}</h1><Card><p className="mb-6 text-base font-medium">{v.summary}</p><div className="prose-content">{v.content}</div><p className="mt-6 text-xs muted">Conteúdo educacional demonstrativo. Confirme os procedimentos com a equipe responsável.</p></Card><TrainingQuiz versionId={v.id} questions={questions}/>{attempts.length>0&&<section className="mt-8"><h2 className="mb-5 text-xl">Suas tentativas</h2><div className="space-y-3">{attempts.map(t=><Card key={t.id} className="flex flex-wrap justify-between gap-3 p-4 text-sm"><span>{displayDate(t.createdAt)} · v{t.version.version}</span><span>{t.correct}/{t.total} · {t.passed?"Aprovada":"Nova tentativa disponível"}</span></Card>)}</div></section>}</>;}
+import { notFound } from "next/navigation";
+import { z } from "zod";
+import { requireActor } from "@/server/auth";
+import { db } from "@/server/db";
+import { transaction } from "@/server/services";
+import { trainingQuestionSchema, displayDate } from "@/lib/domain";
+import { TrainingQuiz } from "@/components/training";
+import { Card } from "@/components/ui/card";
+export default async function Training({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const a = await requireActor();
+  const { id } = await params;
+  const m = await db.trainingModule.findFirst({
+    where: { id, laboratoryId: a.laboratoryId, published: true },
+    include: { versions: { orderBy: { version: "desc" }, take: 1 } },
+  });
+  if (!m) notFound();
+  const v = m.versions[0];
+  await transaction(a, (tx) =>
+    tx.trainingProgress.upsert({
+      where: { userId_versionId: { userId: a.id, versionId: v.id } },
+      create: { userId: a.id, versionId: v.id },
+      update: {},
+    }),
+  );
+  const attempts = await db.trainingAttempt.findMany({
+    where: { userId: a.id, version: { moduleId: id } },
+    include: { version: { select: { version: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+  const questions = z
+    .array(trainingQuestionSchema)
+    .parse(v.questions)
+    .map((q) => ({ id: q.id, text: q.text, options: q.options }));
+  return (
+    <>
+      <span className="eyebrow">Treinamento · Versão {v.version}</span>
+      <h1 className="mt-3 mb-6">{m.title}</h1>
+      <Card>
+        <p className="mb-6 text-base font-medium">{v.summary}</p>
+        <div className="prose-content">{v.content}</div>
+        <p className="mt-6 text-xs muted">
+          Conteúdo educacional demonstrativo. Confirme os procedimentos com a
+          equipe responsável.
+        </p>
+      </Card>
+      <TrainingQuiz versionId={v.id} questions={questions} />
+      {attempts.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-5 text-xl">Suas tentativas</h2>
+          <div className="space-y-3">
+            {attempts.map((t) => (
+              <Card
+                key={t.id}
+                className="flex flex-wrap justify-between gap-3 p-4 text-sm"
+              >
+                <span>
+                  {displayDate(t.createdAt)} · v{t.version.version}
+                </span>
+                <span>
+                  {t.correct}/{t.total} ·{" "}
+                  {t.passed ? "Aprovada" : "Nova tentativa disponível"}
+                </span>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}

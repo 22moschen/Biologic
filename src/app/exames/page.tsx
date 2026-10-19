@@ -1,10 +1,113 @@
 import Link from "next/link";
-import {FlaskConical,Search,ArrowRight} from "lucide-react";
-import {PublicHeader,PublicFooter} from "@/components/public-shell";
-import {Card} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {db,databaseConfigured} from "@/server/db";
-import {Category} from "@prisma/client";
-export const dynamic="force-dynamic";
-export default async function Catalog({searchParams}:{searchParams:Promise<{q?:string;category?:string}>}){const {q="",category=""}=await searchParams;const categories={SANGUE:"Sangue",URINA:"Urina",FEZES:"Fezes",OUTROS:"Outros"};const lab=databaseConfigured()?await db.laboratory.findUnique({where:{slug:"biologic-academico"}}):null;const exams=lab?await db.exam.findMany({where:{laboratoryId:lab.id,active:true,name:{contains:q.slice(0,120),mode:"insensitive"},...(category in categories?{category:category as Category}:{})},orderBy:{name:"asc"}}):[];return <><PublicHeader/><main id="conteudo" className="container py-12"><span className="eyebrow">Área do paciente</span><h1 className="mt-3">Informação para cuidar de você.</h1><p className="mt-4 max-w-2xl muted">Selecione um exame para consultar as orientações gerais. Para informações do seu atendimento, use o link individual entregue pela equipe.</p><form className="my-8 flex flex-wrap gap-3"><div className="relative min-w-48 flex-1"><Search size={18} className="absolute left-3 top-3.5 text-primary"/><Input aria-label="Buscar exame" name="q" defaultValue={q} placeholder="Qual exame você procura?" className="pl-10"/></div><select name="category" aria-label="Categoria" defaultValue={category} className="w-auto"><option value="">Todas as categorias</option>{Object.entries(categories).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><Button>Buscar</Button></form>{!databaseConfigured()?<div className="notice">O catálogo estará disponível após a configuração do banco Neon e a publicação dos conteúdos pelo laboratório.</div>:!exams.length?<div className="empty">Nenhum exame disponível para esta busca.</div>:<div className="grid gap-5 md:grid-cols-3">{exams.map(e=><Card key={e.id}><div className="mb-5 inline-flex rounded-xl bg-muted p-3"><FlaskConical className="text-primary" size={24}/></div><span className="eyebrow block mb-2">{categories[e.category]}</span><h2 className="text-xl">{e.name}</h2><Link href={`/exames/${e.id}`} className="mt-6 inline-flex items-center gap-2 font-semibold text-primary">Ver orientações<ArrowRight size={17}/></Link></Card>)}</div>}<p className="mt-8 text-xs muted">Conteúdos demonstrativos são identificados em cada exame. Em caso de dúvida, consulte a equipe responsável.</p></main><PublicFooter/></>;}
+import { FlaskConical, Search, ArrowRight } from "lucide-react";
+import { PublicHeader, PublicFooter } from "@/components/public-shell";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { db, databaseConfigured } from "@/server/db";
+import { Category } from "@prisma/client";
+export const dynamic = "force-dynamic";
+export default async function Catalog({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; category?: string }>;
+}) {
+  const { q = "", category = "" } = await searchParams;
+  const categories = {
+    SANGUE: "Sangue",
+    URINA: "Urina",
+    FEZES: "Fezes",
+    OUTROS: "Outros",
+  };
+  const lab = databaseConfigured()
+    ? await db.laboratory.findUnique({ where: { slug: "biologic-academico" } })
+    : null;
+  const exams = lab
+    ? await db.exam.findMany({
+        where: {
+          laboratoryId: lab.id,
+          active: true,
+          name: { contains: q.slice(0, 120), mode: "insensitive" },
+          ...(category in categories ? { category: category as Category } : {}),
+        },
+        orderBy: { name: "asc" },
+      })
+    : [];
+  return (
+    <>
+      <PublicHeader />
+      <main id="conteudo" className="container py-12">
+        <span className="eyebrow">Área do paciente</span>
+        <h1 className="mt-3">Informação para cuidar de você.</h1>
+        <p className="mt-4 max-w-2xl muted">
+          Selecione um exame para consultar as orientações gerais. Para
+          informações do seu atendimento, use o link individual entregue pela
+          equipe.
+        </p>
+        <form className="my-8 flex flex-wrap gap-3">
+          <div className="relative min-w-48 flex-1">
+            <Search
+              size={18}
+              className="absolute left-3 top-3.5 text-primary"
+            />
+            <Input
+              aria-label="Buscar exame"
+              name="q"
+              defaultValue={q}
+              placeholder="Qual exame você procura?"
+              className="pl-10"
+            />
+          </div>
+          <select
+            name="category"
+            aria-label="Categoria"
+            defaultValue={category}
+            className="w-auto"
+          >
+            <option value="">Todas as categorias</option>
+            {Object.entries(categories).map(([k, v]) => (
+              <option key={k} value={k}>
+                {v}
+              </option>
+            ))}
+          </select>
+          <Button>Buscar</Button>
+        </form>
+        {!databaseConfigured() ? (
+          <div className="notice">
+            O catálogo estará disponível após a configuração do banco Neon e a
+            publicação dos conteúdos pelo laboratório.
+          </div>
+        ) : !exams.length ? (
+          <div className="empty">Nenhum exame disponível para esta busca.</div>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-3">
+            {exams.map((e) => (
+              <Card key={e.id}>
+                <div className="mb-5 inline-flex rounded-xl bg-muted p-3">
+                  <FlaskConical className="text-primary" size={24} />
+                </div>
+                <span className="eyebrow block mb-2">
+                  {categories[e.category]}
+                </span>
+                <h2 className="text-xl">{e.name}</h2>
+                <Link
+                  href={`/exames/${e.id}`}
+                  className="mt-6 inline-flex items-center gap-2 font-semibold text-primary"
+                >
+                  Ver orientações
+                  <ArrowRight size={17} />
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
+        <p className="mt-8 text-xs muted">
+          Conteúdos demonstrativos são identificados em cada exame. Em caso de
+          dúvida, consulte a equipe responsável.
+        </p>
+      </main>
+      <PublicFooter />
+    </>
+  );
+}

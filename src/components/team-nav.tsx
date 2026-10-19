@@ -1,9 +1,86 @@
 "use client";
 import Link from "next/link";
-import {usePathname} from "next/navigation";
-import {signOut} from "next-auth/react";
-import {LayoutDashboard,Users,ClipboardList,BookOpen,FlaskConical,Settings,LogOut,ArrowUpRight} from "lucide-react";
-import {Brand} from "./brand";
-export function TeamNav({admin,name}:{admin:boolean;name:string}){const path=usePathname();const links=[{href:"/equipe",label:"Visão geral",icon:LayoutDashboard},{href:"/equipe/pacientes",label:"Pacientes",icon:Users},{href:"/equipe/atendimentos",label:"Atendimentos",icon:ClipboardList},{href:"/equipe/treinamentos",label:"Treinamentos",icon:BookOpen},...(admin?[{href:"/equipe/exames",label:"Exames e checklists",icon:FlaskConical},{href:"/equipe/administracao",label:"Administração",icon:Settings}]:[])];
- return <aside className="no-print border-b border-border bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:border-r"><div className="px-6 py-6"><Brand/><p className="mt-2 text-[10px] uppercase tracking-widest muted">Central de atendimento</p></div><nav aria-label="Menu da equipe" className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible">{links.map(x=><Link key={x.href} href={x.href} className={`flex items-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-medium ${path===x.href||(x.href!=="/equipe"&&path.startsWith(x.href))?"bg-muted text-primary":"text-[#59776c] hover:bg-muted"}`}><x.icon size={18}/>{x.label}</Link>)}</nav><div className="px-6 py-5 lg:absolute lg:bottom-0 lg:left-0 lg:right-0"><p className="truncate text-sm font-semibold">{name}</p><p className="text-xs muted">{admin?"Administradora":"Atendente"}</p><div className="mt-4 flex gap-5 text-xs"><Link href="/" className="flex items-center gap-1">Site público<ArrowUpRight size={13}/></Link><button onClick={()=>signOut({callbackUrl:"/entrar"})} className="flex items-center gap-1"><LogOut size={13}/>Sair</button></div></div></aside>;
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import {
+  LayoutDashboard,
+  Users,
+  ClipboardList,
+  BookOpen,
+  FlaskConical,
+  Settings,
+  LogOut,
+  ArrowUpRight,
+} from "lucide-react";
+import { Brand } from "./brand";
+export function TeamNav({ admin, name }: { admin: boolean; name: string }) {
+  const path = usePathname();
+  const links = [
+    { href: "/equipe", label: "Visão geral", icon: LayoutDashboard },
+    { href: "/equipe/pacientes", label: "Pacientes", icon: Users },
+    {
+      href: "/equipe/atendimentos",
+      label: "Atendimentos",
+      icon: ClipboardList,
+    },
+    { href: "/equipe/treinamentos", label: "Treinamentos", icon: BookOpen },
+    ...(admin
+      ? [
+          {
+            href: "/equipe/exames",
+            label: "Exames e checklists",
+            icon: FlaskConical,
+          },
+          {
+            href: "/equipe/administracao",
+            label: "Administração",
+            icon: Settings,
+          },
+        ]
+      : []),
+  ];
+  return (
+    <aside className="no-print border-b border-border bg-white lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 lg:border-r">
+      <div className="px-6 py-6">
+        <Brand />
+        <p className="mt-2 text-[10px] uppercase tracking-widest muted">
+          Central de atendimento
+        </p>
+      </div>
+      <nav
+        aria-label="Menu da equipe"
+        className="flex gap-1 overflow-x-auto px-3 pb-3 lg:flex-col lg:overflow-visible"
+      >
+        {links.map((x) => (
+          <Link
+            key={x.href}
+            href={x.href}
+            className={`flex items-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-xs font-medium ${path === x.href || (x.href !== "/equipe" && path.startsWith(x.href)) ? "bg-muted text-primary" : "text-[#59776c] hover:bg-muted"}`}
+          >
+            <x.icon size={18} />
+            {x.label}
+          </Link>
+        ))}
+      </nav>
+      <div className="px-6 py-5 lg:absolute lg:bottom-0 lg:left-0 lg:right-0">
+        <p className="truncate text-sm font-semibold">{name}</p>
+        <p className="text-xs muted">
+          {admin ? "Administradora" : "Atendente"}
+        </p>
+        <div className="mt-4 flex gap-5 text-xs">
+          <Link href="/" className="flex items-center gap-1">
+            Site público
+            <ArrowUpRight size={13} />
+          </Link>
+          <button
+            onClick={() => signOut({ callbackUrl: "/entrar" })}
+            className="flex items-center gap-1"
+          >
+            <LogOut size={13} />
+            Sair
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
 }
