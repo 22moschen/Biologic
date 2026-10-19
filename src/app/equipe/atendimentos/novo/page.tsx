@@ -1,4 +1,4 @@
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import { AttendanceForm } from "@/components/forms";
 import { Card } from "@/components/ui/card";

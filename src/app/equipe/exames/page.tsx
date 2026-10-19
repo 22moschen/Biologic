@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { assertAdmin } from "@/lib/domain";
 import { db } from "@/server/db";
 import { Button } from "@/components/ui/button";

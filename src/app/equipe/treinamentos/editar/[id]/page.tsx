@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import { trainingSchema } from "@/lib/domain";
 import { TrainingEditor } from "@/components/training";

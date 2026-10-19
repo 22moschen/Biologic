@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AttendanceStatus } from "@prisma/client";
 import { fromZonedTime } from "date-fns-tz";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import {
   displayDate,

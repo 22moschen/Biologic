@@ -53,7 +53,7 @@ export default function Home() {
               </p>
             </div>
             <div className="relative">
-              <div className="rounded-[2rem] border border-white bg-white/70 p-7 shadow-sm md:p-9">
+              <div className="rounded-[2rem] border border-white bg-white/70 p-7 pb-16 shadow-sm md:p-9 md:pb-16">
                 <div className="mb-7 flex items-center justify-between">
                   <span className="badge">Juntos, antes da coleta</span>
                   <FlaskConical className="text-primary" size={27} />

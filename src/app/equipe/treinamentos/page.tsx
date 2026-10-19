@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookOpen, ArrowRight } from "lucide-react";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

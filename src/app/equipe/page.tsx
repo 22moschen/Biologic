@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { startOfDay, endOfDay } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import { displayDate, statusLabel, zone } from "@/lib/domain";
 import { Card } from "@/components/ui/card";

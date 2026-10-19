@@ -1,41 +1,12 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { requireActor } from "@/server/auth";
-import { db } from "@/server/db";
-import { maskCpf, birthDisplay } from "@/lib/domain";
+import { requirePageActor } from "@/server/auth";
+import { findPatients } from "@/server/patient-search";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-export default async function Patients({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; page?: string }>;
-}) {
-  const a = await requireActor();
-  const { q = "", page = "1" } = await searchParams;
-  const n = Math.max(1, Math.min(10000, Number(page) || 1));
-  const digits = q.replace(/\D/g, "");
-  const where = {
-    laboratoryId: a.laboratoryId,
-    ...(q
-      ? {
-          OR: [
-            {
-              name: { contains: q.slice(0, 160), mode: "insensitive" as const },
-            },
-            ...(digits ? [{ cpf: { contains: digits } }] : []),
-          ],
-        }
-      : {}),
-  };
-  const [patients, count] = await Promise.all([
-    db.patient.findMany({
-      where,
-      skip: (n - 1) * 20,
-      take: 20,
-      orderBy: { name: "asc" },
-    }),
-    db.patient.count({ where }),
-  ]);
+import { PatientDirectory } from "@/components/patient-directory";
+export default async function Patients() {
+  const a = await requirePageActor();
+  const initial = await findPatients(a, { query: "", page: 1 });
   return (
     <>
       <div className="page-head">
@@ -50,59 +21,7 @@ export default async function Patients({
           </Link>
         </Button>
       </div>
-      <form className="mb-6 flex gap-3">
-        <Input
-          name="q"
-          defaultValue={q}
-          placeholder="Buscar por nome ou CPF"
-          aria-label="Buscar paciente"
-        />
-        <Button variant="outline">Buscar</Button>
-      </form>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Nascimento</th>
-              <th>CPF</th>
-              <th>Cadastro</th>
-            </tr>
-          </thead>
-          <tbody>
-            {patients.map((p) => (
-              <tr key={p.id}>
-                <td>{p.name}</td>
-                <td>{birthDisplay(p.birthDate)}</td>
-                <td>{maskCpf(p.cpf)}</td>
-                <td>
-                  <Link href={`/equipe/pacientes/${p.id}`}>Abrir →</Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!patients.length && (
-          <p className="empty">Nenhum paciente encontrado.</p>
-        )}
-      </div>
-      <div className="mt-5 flex items-center justify-between text-sm">
-        <span>
-          {count} pacientes · Página {n}
-        </span>
-        <div className="flex gap-4">
-          {n > 1 && (
-            <Link href={`?q=${encodeURIComponent(q)}&page=${n - 1}`}>
-              Anterior
-            </Link>
-          )}
-          {n * 20 < count && (
-            <Link href={`?q=${encodeURIComponent(q)}&page=${n + 1}`}>
-              Próxima
-            </Link>
-          )}
-        </div>
-      </div>
+      <PatientDirectory initial={initial} />
     </>
   );
 }

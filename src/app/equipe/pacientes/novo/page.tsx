@@ -1,4 +1,4 @@
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { PatientForm } from "@/components/forms";
 import { Card } from "@/components/ui/card";
 export default async function NewPatient() {

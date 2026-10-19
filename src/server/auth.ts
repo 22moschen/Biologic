@@ -1,6 +1,7 @@
 import "server-only";
 import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
@@ -92,4 +93,13 @@ export async function requireActor(): Promise<Actor> {
     role: user.role,
     sessionVersion: user.sessionVersion,
   };
+}
+
+export async function requirePageActor(): Promise<Actor> {
+  try {
+    return await requireActor();
+  } catch (error) {
+    if (error instanceof DomainError) redirect("/entrar");
+    throw error;
+  }
 }

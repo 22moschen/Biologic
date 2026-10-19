@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireActor } from "@/server/auth";
+import { requirePageActor as requireActor } from "@/server/auth";
 import { db } from "@/server/db";
 import { TeamNav } from "@/components/team-nav";
 export const dynamic = "force-dynamic";
