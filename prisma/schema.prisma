@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "client"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+enum Role {
+  ADMINISTRADOR
+  ATENDENTE
+}
+enum AttendanceStatus {
+  EM_PREENCHIMENTO
+  COM_PENDENCIA
+  CONFERENCIA_CONCLUIDA
+}
+enum Category {
+  SANGUE
+  URINA
+  FEZES
+  OUTROS
+}
+model Laboratory {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  users User[]
+  patients Patient[]
+  exams Exam[]
+  attendances Attendance[]
+  modules TrainingModule[]
+  audits AuditEvent[]
+}
+model User {
+  id String @id @default(cuid())
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  email String @unique
+  name String
+  passwordHash String
+  role Role @default(ATENDENTE)
+  active Boolean @default(true)
+  sessionVersion Int @default(0)
+  createdAt DateTime @default(now())
+  attempts TrainingAttempt[]
+  progress TrainingProgress[]
+  @@index([laboratoryId])
+}
+model Patient {
+  id String @id @default(cuid())
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  name String
+  birthDate DateTime @db.Date
+  cpf String?
+  phone String?
+  email String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  attendances Attendance[]
+  @@unique([laboratoryId, cpf])
+  @@unique([id, laboratoryId])
+  @@index([laboratoryId, name])
+}
+model Exam {
+  id String @id @default(cuid())
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  code String
+  name String
+  category Category
+  active Boolean @default(true)
+  currentVersion Int @default(1)
+  versions ExamVersion[]
+  @@unique([laboratoryId, code])
+  @@index([laboratoryId, active])
+}
+model ExamVersion {
+  id String @id @default(cuid())
+  examId String
+  exam Exam @relation(fields: [examId], references: [id])
+  version Int
+  content Json
+  createdAt DateTime @default(now())
+  @@unique([examId, version])
+}
+model Attendance {
+  id String @id @default(cuid())
+  publicId String @unique @default(uuid())
+  requestKey String @unique
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  patientId String
+  patient Patient @relation(fields: [patientId, laboratoryId], references: [id, laboratoryId])
+  status AttendanceStatus @default(EM_PREENCHIMENTO)
+  revision Int @default(0)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+  exams AttendanceExam[]
+  answers ChecklistAnswer[]
+  issues PendingIssue[]
+  tokens PatientAccessToken[]
+  @@index([laboratoryId, createdAt])
+  @@index([laboratoryId, status])
+}
+model AttendanceExam {
+  id String @id @default(cuid())
+  attendanceId String
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  sourceExamId String
+  version Int
+  snapshot Json
+  @@unique([attendanceId, sourceExamId])
+}
+model ChecklistAnswer {
+  id String @id @default(cuid())
+  attendanceId String
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  questionKey String
+  value String
+  updatedAt DateTime @updatedAt
+  @@unique([attendanceId, questionKey])
+}
+model PendingIssue {
+  id String @id @default(cuid())
+  attendanceId String
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  questionKey String
+  originalAnswer String
+  question String
+  resolvedAt DateTime?
+  resolvedBy String?
+  justification String?
+  @@unique([attendanceId, questionKey])
+}
+model PatientAccessToken {
+  id String @id @default(cuid())
+  attendanceId String
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  hash String @unique
+  sessionHash String? @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([attendanceId])
+}
+model TrainingModule {
+  id String @id @default(cuid())
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  title String
+  slug String
+  published Boolean @default(false)
+  currentVersion Int @default(1)
+  versions TrainingVersion[]
+  @@unique([laboratoryId, slug])
+}
+model TrainingVersion {
+  id String @id @default(cuid())
+  moduleId String
+  module TrainingModule @relation(fields: [moduleId], references: [id])
+  version Int
+  summary String
+  content String
+  questions Json
+  createdAt DateTime @default(now())
+  attempts TrainingAttempt[]
+  progress TrainingProgress[]
+  @@unique([moduleId, version])
+}
+model TrainingAttempt {
+  id String @id @default(cuid())
+  requestKey String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  versionId String
+  version TrainingVersion @relation(fields: [versionId], references: [id])
+  answers Json
+  correct Int
+  total Int
+  passed Boolean
+  createdAt DateTime @default(now())
+}
+model TrainingProgress {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id])
+  versionId String
+  version TrainingVersion @relation(fields: [versionId], references: [id])
+  readAt DateTime?
+  completedAt DateTime?
+  @@unique([userId, versionId])
+}
+model AuditEvent {
+  id String @id @default(cuid())
+  laboratoryId String
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+  actorId String
+  action String
+  entityId String
+  detail Json
+  createdAt DateTime @default(now())
+  @@index([laboratoryId, createdAt])
+}
+model RateLimit {
+  key String @id
+  count Int @default(1)
+  expiresAt DateTime
+}
+model SeedRun {
+  id String @id
+  createdAt DateTime @default(now())
+}

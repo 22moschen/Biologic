@@ -1,0 +1,7 @@
+import "server-only";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import { PrismaClient } from "@prisma/client";
+const globalDb=globalThis as unknown as {prisma?:PrismaClient};
+export const db=globalDb.prisma??new PrismaClient({adapter:new PrismaNeon({connectionString:process.env.DATABASE_URL??""}),log:[]});
+if(process.env.NODE_ENV!=="production")globalDb.prisma=db;
+export const databaseConfigured=()=>Boolean(process.env.DATABASE_URL);
