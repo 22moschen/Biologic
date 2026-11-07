@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
   serverExternalPackages: ["@prisma/client", "bcryptjs"],
+  outputFileTracingIncludes: {
+    "/**/*": ["./node_modules/.prisma/client/**/*"],
+  },
   async headers() {
     return [
       {
